@@ -56,7 +56,7 @@ def delete_room(name):
     statement = "DELETE FROM rooms WHERE name = ?"
     cursor.execute(statement, [name])
     db.commit()
-    return True
+    return {'success': True, 'name': name}
 
 
 def get_by_name(name):
