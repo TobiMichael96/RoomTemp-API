@@ -61,8 +61,10 @@ def get_all():
 
 @app.route('/api/v1/room/<string:name>', methods=['GET'])
 def get_room(name):
-    game = db.get_by_name(name)
-    return jsonify(game)
+    room = db.get_by_name(name)
+    if len(room) == 0:
+        return make_response(jsonify({'error': 'Room not found.'}), 404)
+    return jsonify(room[0])
 
 
 @app.route('/api/v1/room', methods=['POST'])
@@ -77,7 +79,7 @@ def insert_room():
         db.insert_room(name, temp)
         return jsonify({'temp': temp, 'name': name}), 201
     except sqlite3.IntegrityError:
-        return make_response(jsonify({'error': "Already exists.", 'name': name}), 409)
+        return make_response(jsonify({'error': "Room already exists.", 'name': name}), 409)
 
 
 @app.route('/api/v1/room/<string:name>', methods=['PUT'])
