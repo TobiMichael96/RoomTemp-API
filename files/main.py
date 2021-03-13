@@ -89,14 +89,20 @@ def update_room(name):
         abort(400)
     temp = request.json.get('temp', 0)
     result = db.update_room(name, temp)
-    return jsonify(result)
+    if result > 0:
+        return jsonify({'success': True, 'name': name, 'temp': temp})
+    else:
+        return make_response(jsonify({'error': 'Room not found.'}), 404)
 
 
 @app.route('/api/v1/room/<string:name>', methods=['DELETE'])
 @auth.login_required
 def delete_task(name):
     result = db.delete_room(name)
-    return jsonify(result)
+    if result > 0:
+        return jsonify({'success': True, 'name': name})
+    else:
+        return make_response(jsonify({'error': 'Room not found.'}), 404)
 
 
 app.run(host='0.0.0.0')

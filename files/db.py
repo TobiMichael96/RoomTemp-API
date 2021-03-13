@@ -47,7 +47,7 @@ def update_room(name, temp):
     statement = "UPDATE rooms SET temp = ?, updated = ? WHERE name = ?"
     cursor.execute(statement, [temp, datetime.now(), name])
     db.commit()
-    return {'name': name, 'temp': temp}
+    return cursor.rowcount
 
 
 def delete_room(name):
@@ -56,7 +56,7 @@ def delete_room(name):
     statement = "DELETE FROM rooms WHERE name = ?"
     cursor.execute(statement, [name])
     db.commit()
-    return {'success': True, 'name': name}
+    return cursor.rowcount
 
 
 def get_by_name(name):
