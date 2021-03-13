@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  api:
+    build: .
+    container_name: tm-rooms-api
+    environment:
+      - API_PASSWORD=admin
+      - API_USERNAME=admin
+    ports:
+      - 5000:5000
+    volumes:
+    - ./db:/db
