@@ -96,7 +96,7 @@ def update_room(name):
 @auth.login_required
 def delete_task(name):
     result = db.delete_room(name)
-    return jsonify({'success': result})
+    return jsonify(result)
 
 
 app.run(host='0.0.0.0')
