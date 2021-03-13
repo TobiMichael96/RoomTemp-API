@@ -47,7 +47,7 @@ def update_room(name, temp):
     statement = "UPDATE rooms SET temp = ?, updated = ? WHERE name = ?"
     cursor.execute(statement, [temp, datetime.now(), name])
     db.commit()
-    return True
+    return {'name': name, 'temp': temp}
 
 
 def delete_room(name):
