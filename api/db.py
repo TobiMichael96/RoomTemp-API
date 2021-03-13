@@ -36,7 +36,7 @@ def insert_room(name, temp):
     db = get_db()
     cursor = db.cursor()
     statement = "INSERT INTO rooms(name, temp, updated) VALUES (?, ?, ?)"
-    cursor.execute(statement, [name, temp, datetime.now()])
+    cursor.execute(statement, [name, temp, datetime.now().strftime("%a %d.%m. - %H:%M")])
     db.commit()
     return True
 
@@ -45,7 +45,7 @@ def update_room(name, temp):
     db = get_db()
     cursor = db.cursor()
     statement = "UPDATE rooms SET temp = ?, updated = ? WHERE name = ?"
-    cursor.execute(statement, [temp, datetime.now(), name])
+    cursor.execute(statement, [temp, datetime.now().strftime("%a %d.%m. - %H:%M"), name])
     db.commit()
     return cursor.rowcount
 

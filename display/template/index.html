@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            width:50%;
+            margin-left:auto;
+            margin-right:auto;
+            margin-top: 5%;
+        }
+
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid black;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+    <title>Room-Temp</title>
+</head>
+<body>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Temperature</th>
+        <th>Last updated</th>
+    </tr>
+    {% for room in rooms %}
+    <tr>
+        <td>{{ room['name'] }}</td>
+        <td>{{ room['temp'] }}</td>
+        <td>{{ room['updated'] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+</html>

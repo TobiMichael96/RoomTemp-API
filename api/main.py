@@ -18,17 +18,6 @@ if user is None or password is None:
 
 db.create_table()
 
-# rooms = [
-#     {'id': 0,
-#      'name': 'Tobi',
-#      'temp': 23,
-#      'updated': datetime.now()},
-#     {'id': 1,
-#      'name': 'Kitchen',
-#      'temp': 23,
-#      'updated': datetime.now()}
-# ]
-
 
 @auth.get_password
 def get_password(username):
