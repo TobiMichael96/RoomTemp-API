@@ -14,6 +14,7 @@ while True:
 		print("Temp: " + str(round(temperature, 3)) + " Humidity: " + str(round(humidity, 3)))
 		answer = requests.put(os.getenv('URL'), auth=(os.getenv('USERNAME'), os.getenv('PASSWORD')), json={"temperature": round(temperature, 3), "humidity": round(humidity, 3)})
 		print(answer)
+	else:
 		sleep = 5
 	time.sleep(sleep)
 	sleep = 60

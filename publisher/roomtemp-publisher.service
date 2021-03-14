@@ -1,0 +1,17 @@
+[Unit]
+Description=RoomTemp API Publisher
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+Environment="URL=https://endpointurl"
+Environment="USERNAME=herecomesthename"
+Environment="PASSWORD=andtherethepassword"
+ExecStart=python3 /path/to/RoomTemp-API/publisher/main.py
+
+[Install]
+WantedBy=multi-user.target
