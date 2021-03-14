@@ -1,6 +1,6 @@
 import sqlite3
 from datetime import datetime
-
+import pytz
 
 DATABASE_NAME = "/db/rooms.sqlite"
 
@@ -38,7 +38,7 @@ def insert_room(name, temperature, humidity):
     db = get_db()
     cursor = db.cursor()
     statement = "INSERT INTO rooms(name, temperature, humidity, updated) VALUES (?, ?, ?, ?)"
-    cursor.execute(statement, [name, temperature, humidity, datetime.now().strftime("%a %d.%m. - %H:%M:%S")])
+    cursor.execute(statement, [name, temperature, humidity, datetime.now(pytz.timezone('Europe/Berlin')).strftime("%a %d.%m. - %H:%M:%S")])
     db.commit()
     return True
 
@@ -48,10 +48,10 @@ def update_room(name, temperature=None, humidity=None):
     cursor = db.cursor()
     if temperature is not None:
         statement = "UPDATE rooms SET temperature = ?, updated = ? WHERE name = ?"
-        cursor.execute(statement, [temperature, datetime.now().strftime("%a %d.%m. - %H:%M:%S"), name])
+        cursor.execute(statement, [temperature, datetime.now(pytz.timezone('Europe/Berlin')).strftime("%a %d.%m. - %H:%M:%S"), name])
     if humidity is not None:
         statement = "UPDATE rooms SET humidity = ?, updated = ? WHERE name = ?"
-        cursor.execute(statement, [humidity, datetime.now().strftime("%a %d.%m. - %H:%M:%S"), name])
+        cursor.execute(statement, [humidity, datetime.now(pytz.timezone('Europe/Berlin')).strftime("%a %d.%m. - %H:%M:%S"), name])
     db.commit()
     return cursor.rowcount
 

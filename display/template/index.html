@@ -26,6 +26,7 @@
         }
     </style>
     <title>Room-Temp</title>
+    <meta http-equiv="refresh" content="60" >
 </head>
 <body>
 <table>
@@ -39,7 +40,7 @@
     <tr>
         <td>{{ room['name'] }}</td>
         <td>{{ room['temperature'] }}°C</td>
-        <td>{{ room['humidity'] }}°C</td>
+        <td>{{ room['humidity'] }}%</td>
         <td>{{ room['updated'] }}</td>
     </tr>
     {% endfor %}
