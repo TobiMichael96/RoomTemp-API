@@ -32,12 +32,14 @@
     <tr>
         <th>Name</th>
         <th>Temperature</th>
+        <th>Humidity</th>
         <th>Last updated</th>
     </tr>
     {% for room in rooms %}
     <tr>
         <td>{{ room['name'] }}</td>
-        <td>{{ room['temp'] }}°C</td>
+        <td>{{ room['temperature'] }}°C</td>
+        <td>{{ room['humidity'] }}°C</td>
         <td>{{ room['updated'] }}</td>
     </tr>
     {% endfor %}

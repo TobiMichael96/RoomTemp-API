@@ -63,10 +63,11 @@ def insert_room():
         abort(400)
 
     name = request.json['name']
-    temp = request.json.get('temp', 0)
+    temperature = request.json.get('temperature', 0)
+    humidity = request.json.get('humidity', 0)
     try:
-        db.insert_room(name, temp)
-        return jsonify({'temp': temp, 'name': name}), 201
+        db.insert_room(name, temperature, humidity)
+        return jsonify({'temperature': temperature, 'humidity': humidity, 'name': name}), 201
     except sqlite3.IntegrityError:
         return make_response(jsonify({'error': "Room already exists.", 'name': name}), 409)
 
@@ -74,19 +75,26 @@ def insert_room():
 @app.route('/api/v1/room/<string:name>', methods=['PUT'])
 @auth.login_required
 def update_room(name):
-    if not request.json or 'temp' not in request.json:
-        abort(400)
-    temp = request.json.get('temp', 0)
-    result = db.update_room(name, temp)
+    if not request.json or ('temperature' not in request.json and 'humidity' not in request.json):
+        return make_response(jsonify({'error': 'Missing update data.'}), 400)
+
+    result = 0
+    temperature = request.json.get('temperature', 0)
+    humidity = request.json.get('humidity', 0)
+    if temperature != 0:
+        result = db.update_room(name, temperature=temperature)
+    if humidity != 0:
+        result = db.update_room(name, humidity=humidity)
+
     if result > 0:
-        return jsonify({'success': True, 'name': name, 'temp': temp})
+        return jsonify({'success': True, 'name': name})
     else:
         return make_response(jsonify({'error': 'Room not found.'}), 404)
 
 
 @app.route('/api/v1/room/<string:name>', methods=['DELETE'])
 @auth.login_required
-def delete_task(name):
+def delete_room(name):
     result = db.delete_room(name)
     if result > 0:
         return jsonify({'success': True, 'name': name})

@@ -13,7 +13,8 @@ def get_db():
 def create_table():
     table = "CREATE TABLE IF NOT EXISTS rooms (id INTEGER PRIMARY KEY AUTOINCREMENT, " \
             "name VARCHAR NOT NULL UNIQUE, " \
-            "temp INTEGER DEFAULT 0, " \
+            "temperature INTEGER DEFAULT 0, " \
+            "humidity INTEGER DEFAULT 0, " \
             "updated VARCHAR);"
     db = get_db()
     cursor = db.cursor()
@@ -25,27 +26,32 @@ def build_json(cursor):
     for row in cursor.fetchall():
         room = {
             'name': row[1],
-            'temp': row[2],
-            'updated': row[3]
+            'temperature': row[2],
+            'humidity': row[3],
+            'updated': row[4]
         }
         result.append(room)
     return result
 
 
-def insert_room(name, temp):
+def insert_room(name, temperature, humidity):
     db = get_db()
     cursor = db.cursor()
-    statement = "INSERT INTO rooms(name, temp, updated) VALUES (?, ?, ?)"
-    cursor.execute(statement, [name, temp, datetime.now().strftime("%a %d.%m. - %H:%M:%S")])
+    statement = "INSERT INTO rooms(name, temperature, humidity, updated) VALUES (?, ?, ?, ?)"
+    cursor.execute(statement, [name, temperature, humidity, datetime.now().strftime("%a %d.%m. - %H:%M:%S")])
     db.commit()
     return True
 
 
-def update_room(name, temp):
+def update_room(name, temperature=None, humidity=None):
     db = get_db()
     cursor = db.cursor()
-    statement = "UPDATE rooms SET temp = ?, updated = ? WHERE name = ?"
-    cursor.execute(statement, [temp, datetime.now().strftime("%a %d.%m. - %H:%M:%S"), name])
+    if temperature is not None:
+        statement = "UPDATE rooms SET temperature = ?, updated = ? WHERE name = ?"
+        cursor.execute(statement, [temperature, datetime.now().strftime("%a %d.%m. - %H:%M:%S"), name])
+    if humidity is not None:
+        statement = "UPDATE rooms SET humidity = ?, updated = ? WHERE name = ?"
+        cursor.execute(statement, [humidity, datetime.now().strftime("%a %d.%m. - %H:%M:%S"), name])
     db.commit()
     return cursor.rowcount
 
@@ -62,7 +68,7 @@ def delete_room(name):
 def get_by_name(name):
     db = get_db()
     cursor = db.cursor()
-    statement = "SELECT id, name, temp, updated FROM rooms WHERE name = ?"
+    statement = "SELECT id, name, temperature, humidity, updated FROM rooms WHERE name = ?"
     cursor.execute(statement, [name])
     return build_json(cursor)
 
