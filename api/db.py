@@ -60,7 +60,9 @@ def get_by_name(name, limit):
     try:
         cursor.execute(statement, [limit])
     except sqlite3.DatabaseError:
-        return False
+        return 1
+    if cursor.rowcount == 0:
+        return 2
     return build_json(cursor)
 
 

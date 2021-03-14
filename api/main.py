@@ -60,8 +60,10 @@ def get_room(name):
     else:
         limit = 25
     room = db.get_by_name(name, limit)
-    if not room:
+    if room == 1:
         return make_response(jsonify({'error': 'Room not found.'}), 404)
+    if room == 2:
+        return make_response(jsonify({'error': 'No data found for room.'}), 204)
     return jsonify(room)
 
 

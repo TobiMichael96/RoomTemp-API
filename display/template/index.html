@@ -29,21 +29,23 @@
     <meta http-equiv="refresh" content="60" >
 </head>
 <body>
+{% for room in rooms %}
+
+<h2>{{ room }}</h2>
 <table>
     <tr>
-        <th>Name</th>
         <th>Temperature</th>
         <th>Humidity</th>
-        <th>Last updated</th>
+        <th>Time</th>
     </tr>
-    {% for room in rooms %}
+    {% for data in rooms[room] %}
     <tr>
-        <td>{{ room['name'] }}</td>
-        <td>{{ room['temperature'] }}°C</td>
-        <td>{{ room['humidity'] }}%</td>
-        <td>{{ room['updated'] }}</td>
+        <td>{{ data['temperature'] }}°C</td>
+        <td>{{ data['humidity'] }}%</td>
+        <td>{{ data['time'] }}</td>
     </tr>
     {% endfor %}
 </table>
+{% endfor %}
 </body>
 </html>
