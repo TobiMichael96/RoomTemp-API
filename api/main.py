@@ -1,9 +1,8 @@
 import os
-import sqlite3
 import db
 
 import flask
-from flask import make_response, jsonify, request, abort
+from flask import make_response, jsonify, request
 from flask_httpauth import HTTPBasicAuth
 
 app = flask.Flask(__name__)
@@ -12,9 +11,12 @@ auth = HTTPBasicAuth()
 user = os.getenv("API_USERNAME")
 password = os.getenv("API_PASSWORD")
 
-if user is None or password is None:
-    print("Username or password not set.")
-    exit(1)
+if user is None:
+    print("No username set, so setting default (admin).")
+    user = "admin"
+if password is None:
+    print("No password set, so setting default (admin).")
+    password = "admin"
 
 db.create_table()
 
@@ -41,65 +43,65 @@ def home():
     return "<h1>API</h1><p>This site is an API for room temperatures.</p>"
 
 
-# A route to return all of the available entries in our catalog.
 @app.route('/api/v1/rooms', methods=['GET'])
 def get_all():
-    rooms = db.get_rooms()
+    if request.json and 'limit' in request.json:
+        limit = request.json.get('limit', 10)
+    else:
+        limit = 10
+    rooms = db.get_rooms(limit)
     return jsonify(rooms)
 
 
 @app.route('/api/v1/room/<string:name>', methods=['GET'])
 def get_room(name):
-    room = db.get_by_name(name)
+    if request.json and 'limit' in request.json:
+        limit = request.json.get('limit', 25)
+    else:
+        limit = 25
+    room = db.get_by_name(name, limit)
     if len(room) == 0:
         return make_response(jsonify({'error': 'Room not found.'}), 404)
-    return jsonify(room[0])
+    return jsonify(room)
 
 
 @app.route('/api/v1/room', methods=['POST'])
 @auth.login_required
-def insert_room():
+def create_room():
     if not request.json or 'name' not in request.json:
-        abort(400)
-
+        make_response(jsonify({'error': 'Request invalid.'}), 400)
     name = request.json['name']
-    temperature = request.json.get('temperature', 0)
-    humidity = request.json.get('humidity', 0)
-    try:
-        db.insert_room(name, temperature, humidity)
-        return jsonify({'temperature': temperature, 'humidity': humidity, 'name': name}), 201
-    except sqlite3.IntegrityError:
-        return make_response(jsonify({'error': "Room already exists.", 'name': name}), 409)
-
-
-@app.route('/api/v1/room/<string:name>', methods=['PUT'])
-@auth.login_required
-def update_room(name):
-    if not request.json or ('temperature' not in request.json and 'humidity' not in request.json):
-        return make_response(jsonify({'error': 'Missing update data.'}), 400)
-
-    result = 0
-    temperature = request.json.get('temperature', 0)
-    humidity = request.json.get('humidity', 0)
-    if temperature != 0:
-        result = db.update_room(name, temperature=temperature)
-    if humidity != 0:
-        result = db.update_room(name, humidity=humidity)
-
-    if result > 0:
-        return jsonify({'success': True, 'name': name})
+    result = db.create_room(name)
+    if result:
+        return jsonify({'success': 'Room created.', 'room': name}), 201
     else:
-        return make_response(jsonify({'error': 'Room not found.'}), 404)
+        return make_response(jsonify({'error': 'Room already exists.', 'room': name}), 409)
+
+
+@app.route('/api/v1/room/<string:name>', methods=['POST'])
+@auth.login_required
+def insert_data(name):
+    if not request.json or 'temperature' not in request.json or 'humidity' not in request.json:
+        return make_response(jsonify({'error': 'Missing update data.'}), 400)
+    temperature = request.json.get('temperature', 0)
+    humidity = request.json.get('humidity', 0)
+    result = db.insert_data(name, temperature, humidity)
+    if result == 0:
+        return make_response(jsonify({'success': 'Data inserted into room.', 'room': name}), 201)
+    elif result == 1:
+        return make_response(jsonify({'error': 'Room does not exist.'}), 404)
+    elif result == 2:
+        return make_response(jsonify({'error': 'Data for room already exists.'}), 409)
 
 
 @app.route('/api/v1/room/<string:name>', methods=['DELETE'])
 @auth.login_required
 def delete_room(name):
     result = db.delete_room(name)
-    if result > 0:
-        return jsonify({'success': True, 'name': name})
+    if result:
+        return jsonify({'success': 'Deleted room.', 'room': name})
     else:
-        return make_response(jsonify({'error': 'Room not found.'}), 404)
+        return make_response(jsonify({'error': 'Room does not exist.'}), 404)
 
 
 app.run(host='0.0.0.0')
