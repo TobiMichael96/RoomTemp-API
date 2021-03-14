@@ -57,7 +57,10 @@ def get_by_name(name, limit):
     db = get_db()
     cursor = db.cursor()
     statement = "SELECT time, temperature, humidity FROM " + name + " ORDER BY timestamp DESC LIMIT ?"
-    cursor.execute(statement, [limit])
+    try:
+        cursor.execute(statement, [limit])
+    except sqlite3.DatabaseError:
+        return False
     return build_json(cursor)
 
 
@@ -66,7 +69,6 @@ def create_room(name):
     cursor = db.cursor()
     statement_insert = "INSERT INTO rooms (name) VALUES (?)"
     cursor.execute(statement_insert, [name])
-
     statement = "CREATE TABLE " + name + " (time DATETIME PRIMARY KEY UNIQUE, " \
                 "temperature INTEGER DEFAULT 0, " \
                 "humidity INTEGER DEFAULT 0, " \
