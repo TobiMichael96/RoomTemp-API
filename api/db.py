@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime, timedelta
+
 import pytz
 
 DATABASE_NAME = "/db/rooms.sqlite"
@@ -22,8 +23,9 @@ def build_json(cursor):
     for row in cursor.fetchall():
         room = {
             'time': row[0],
-            'temperature': row[1],
-            'humidity': row[2]
+            'date': row[1],
+            'temperature': row[2],
+            'humidity': row[3]
         }
         result.append(room)
     return result
@@ -47,7 +49,7 @@ def get_rooms(limit):
     rooms = [x[0] for x in set(cursor.fetchall())]
     result = {}
     for room in rooms:
-        statement = "SELECT time, temperature, humidity FROM " + room + " ORDER BY timestamp DESC LIMIT ?"
+        statement = "SELECT time, date, temperature, humidity FROM " + room + " ORDER BY timestamp DESC LIMIT ?"
         cursor.execute(statement, [limit])
         result[room] = build_json(cursor)
     return result
@@ -56,7 +58,7 @@ def get_rooms(limit):
 def get_by_name(name, limit):
     db = get_db()
     cursor = db.cursor()
-    statement = "SELECT time, temperature, humidity FROM " + name + " ORDER BY timestamp DESC LIMIT ?"
+    statement = "SELECT time, date, temperature, humidity FROM " + name + " ORDER BY timestamp DESC LIMIT ?"
     try:
         cursor.execute(statement, [limit])
     except sqlite3.DatabaseError:
@@ -72,9 +74,10 @@ def create_room(name):
     statement_insert = "INSERT INTO rooms (name) VALUES (?)"
     cursor.execute(statement_insert, [name])
     statement = "CREATE TABLE " + name + " (time DATETIME PRIMARY KEY UNIQUE, " \
-                "temperature INTEGER DEFAULT 0, " \
-                "humidity INTEGER DEFAULT 0, " \
-                "timestamp TIMESTAMP DEFAULT 0);"
+                                         "date DATETIME, " \
+                                         "temperature INTEGER DEFAULT 0, " \
+                                         "humidity INTEGER DEFAULT 0, " \
+                                         "timestamp TIMESTAMP DEFAULT 0);"
     try:
         cursor.execute(statement)
         db.commit()
@@ -86,9 +89,10 @@ def create_room(name):
 def insert_data(name, temperature, humidity):
     db = get_db()
     cursor = db.cursor()
-    statement = "INSERT INTO " + name + " (time, temperature, humidity, timestamp) VALUES (?, ?, ?, ?)"
+    statement = "INSERT INTO " + name + " (time, date, temperature, humidity, timestamp) VALUES (?, ?, ?, ?, ?)"
     try:
-        cursor.execute(statement, [datetime.now(tz=pytz.timezone('Europe/Berlin')).strftime("%a %d.%m. - %H:%M"),
+        cursor.execute(statement, [datetime.now(tz=pytz.timezone('Europe/Berlin')).strftime("%H:00"),
+                                   datetime.now(tz=pytz.timezone('Europe/Berlin')).strftime("%a %d.%m."),
                                    temperature, humidity,
                                    datetime.timestamp(datetime.now(tz=pytz.timezone('Europe/Berlin')))])
         db.commit()
