@@ -11,7 +11,7 @@ auth = HTTPBasicAuth()
 user = os.getenv("API_USERNAME")
 password = os.getenv("API_PASSWORD")
 
-logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 if user is None:
     logging.warning("No username set, so setting default (admin).")

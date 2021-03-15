@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 import pytz
 
-logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 DATABASE_NAME = "/db/rooms.sqlite"
 

@@ -11,7 +11,7 @@ endpoint = os.getenv('URL')
 username = os.getenv('USERNAME')
 password = os.getenv('PASSWORD')
 
-logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 while True:
     humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.AM2302, 2)
