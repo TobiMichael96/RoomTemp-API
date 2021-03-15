@@ -1,6 +1,6 @@
 import os
 import db
-
+import logging
 import flask
 from flask import make_response, jsonify, request
 from flask_httpauth import HTTPBasicAuth
@@ -11,11 +11,13 @@ auth = HTTPBasicAuth()
 user = os.getenv("API_USERNAME")
 password = os.getenv("API_PASSWORD")
 
+logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
+
 if user is None:
-    print("No username set, so setting default (admin).")
+    logging.warning("No username set, so setting default (admin).")
     user = "admin"
 if password is None:
-    print("No password set, so setting default (admin).")
+    logging.warning("No password set, so setting default (admin).")
     password = "admin"
 
 db.create_table()

@@ -1,7 +1,10 @@
 import sqlite3
+import logging
 from datetime import datetime, timedelta
 
 import pytz
+
+logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s')
 
 DATABASE_NAME = "/db/rooms.sqlite"
 
