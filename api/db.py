@@ -1,7 +1,6 @@
 import sqlite3
 import logging
 from datetime import datetime, timedelta
-import pytz
 
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -42,7 +41,7 @@ def delete_old(name):
     db = get_db()
     cursor = db.cursor()
     statement = "DELETE FROM " + name + " WHERE timestamp < ?"
-    seven_days_before = datetime.now(tz=pytz.timezone('Europe/Berlin')) - timedelta(days=7)
+    seven_days_before = datetime.now() - timedelta(days=7)
     seven_days_before_timestamp = datetime.timestamp(seven_days_before)
     cursor.execute(statement, [seven_days_before_timestamp])
     db.commit()
@@ -95,7 +94,7 @@ def insert_data(name, temperature, humidity, timestamp):
     db = get_db()
     cursor = db.cursor()
     if timestamp is None:
-        timestamp = datetime.now(tz=pytz.timezone('Europe/Berlin'))
+        timestamp = datetime.now()
 
     if timestamp.minute < 15:
         timestamp = timestamp.replace(microsecond=0, second=0, minute=0)
