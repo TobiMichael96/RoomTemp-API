@@ -89,7 +89,8 @@ def insert_data(name):
         return make_response(jsonify({'error': 'Missing update data.'}), 400)
     temperature = request.json.get('temperature', 0)
     humidity = request.json.get('humidity', 0)
-    result = db.insert_data(name, temperature, humidity)
+    timestamp = request.json.get('timestamp', None)
+    result = db.insert_data(name, temperature, humidity, timestamp)
     if result == 0:
         return make_response(jsonify({'success': 'Data inserted into room.', 'room': name}), 201)
     elif result == 1:

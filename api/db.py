@@ -1,12 +1,11 @@
 import sqlite3
 import logging
 from datetime import datetime, timedelta
-
 import pytz
 
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-DATABASE_NAME = "/db/rooms.sqlite"
+DATABASE_NAME = "db/rooms.sqlite"
 
 
 def get_db():
@@ -21,15 +20,20 @@ def create_table():
     cursor.execute(table)
 
 
-def build_json(cursor):
+def build_json(cursor, limit):
     result = []
     for row in cursor.fetchall():
+        timestamp = datetime.fromtimestamp(row[0])
+        if limit <= 48 and timestamp.minute == 30:
+            continue
         room = {
-            'time': row[0],
-            'date': row[1],
-            'temperature': row[2],
-            'humidity': row[3]
+            'time': timestamp.strftime('%H:%M'),
+            'date': timestamp.strftime('%a %d.%m.'),
+            'temperature': row[1],
+            'humidity': row[2]
         }
+        if len(row) > 3:
+            print(row[3])
         result.append(room)
     return result
 
@@ -52,23 +56,25 @@ def get_rooms(limit):
     rooms = [x[0] for x in set(cursor.fetchall())]
     result = {}
     for room in rooms:
-        statement = "SELECT time, date, temperature, humidity FROM " + room + " ORDER BY timestamp DESC LIMIT ?"
-        cursor.execute(statement, [limit])
-        result[room] = build_json(cursor)
+        statement = "SELECT timestamp, temperature, humidity FROM " + room + \
+                    " ORDER BY timestamp DESC LIMIT ?"
+        cursor.execute(statement, [limit * 2])
+        result[room] = build_json(cursor, limit)
     return result
 
 
 def get_by_name(name, limit):
     db = get_db()
     cursor = db.cursor()
-    statement = "SELECT time, date, temperature, humidity FROM " + name + " ORDER BY timestamp DESC LIMIT ?"
+    statement = "SELECT timestamp, temperature, humidity FROM " + name + \
+                " ORDER BY timestamp DESC LIMIT ?"
     try:
-        cursor.execute(statement, [limit])
+        cursor.execute(statement, [limit * 2])
     except sqlite3.DatabaseError:
         return 1
     if cursor.rowcount == 0:
         return 2
-    return build_json(cursor)
+    return build_json(cursor, limit)
 
 
 def create_room(name):
@@ -76,11 +82,7 @@ def create_room(name):
     cursor = db.cursor()
     statement_insert = "INSERT INTO rooms (name) VALUES (?)"
     cursor.execute(statement_insert, [name])
-    statement = "CREATE TABLE " + name + " (time DATETIME PRIMARY KEY UNIQUE, " \
-                                         "date DATETIME, " \
-                                         "temperature INTEGER DEFAULT 0, " \
-                                         "humidity INTEGER DEFAULT 0, " \
-                                         "timestamp TIMESTAMP DEFAULT 0);"
+    statement = "CREATE TABLE " + name + " (timestamp TIMESTAMP UNIQUE, humidity INTEGER, temperature INTEGER);"
     try:
         cursor.execute(statement)
         db.commit()
@@ -89,15 +91,22 @@ def create_room(name):
     return True
 
 
-def insert_data(name, temperature, humidity):
+def insert_data(name, temperature, humidity, timestamp):
     db = get_db()
     cursor = db.cursor()
-    statement = "INSERT INTO " + name + " (time, date, temperature, humidity, timestamp) VALUES (?, ?, ?, ?, ?)"
+    if timestamp is None:
+        timestamp = datetime.now(tz=pytz.timezone('Europe/Berlin'))
+
+    if timestamp.minute < 15:
+        timestamp = timestamp.replace(microsecond=0, second=0, minute=0)
+    elif 15 <= timestamp.minute < 45:
+        timestamp = timestamp.replace(microsecond=0, second=0, minute=30)
+    elif timestamp.minute >= 45:
+        timestamp = timestamp.replace(microsecond=0, second=0, minute=0) + timedelta(hours=1)
+
+    statement = "INSERT INTO " + name + " (temperature, humidity, timestamp) VALUES (?, ?, ?)"
     try:
-        cursor.execute(statement, [datetime.now(tz=pytz.timezone('Europe/Berlin')).strftime("%H:00"),
-                                   datetime.now(tz=pytz.timezone('Europe/Berlin')).strftime("%a %d.%m."),
-                                   temperature, humidity,
-                                   datetime.timestamp(datetime.now(tz=pytz.timezone('Europe/Berlin')))])
+        cursor.execute(statement, [temperature, humidity, timestamp.timestamp()])
         db.commit()
         delete_old(name)
     except sqlite3.OperationalError:
