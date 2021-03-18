@@ -2,8 +2,7 @@ import os
 import db
 import logging
 import flask
-import requests
-from flask import make_response, jsonify, request, render_template
+from flask import make_response, jsonify, request, render_template, redirect
 from flask_httpauth import HTTPBasicAuth
 
 app = flask.Flask(__name__, template_folder='template')
@@ -11,6 +10,7 @@ auth = HTTPBasicAuth()
 
 user = os.getenv("API_USERNAME")
 password = os.getenv("API_PASSWORD")
+fav_ico = os.getenv("FAV_ICO")
 
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -44,6 +44,13 @@ def not_found(error):
 @app.route('/', methods=['GET'])
 def home():
     return "<h1>API</h1><p>This site is an API for room temperatures.</p>"
+
+
+@app.route('/favicon.ico')
+def favicon():
+    if fav_ico is None or "http" not in fav_ico:
+        return make_response(404)
+    return redirect(fav_ico)
 
 
 @app.route('/dashboard', methods=['GET'])
