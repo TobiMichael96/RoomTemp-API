@@ -27,7 +27,7 @@ def build_json(cursor, limit):
             continue
         room = {
             'time': timestamp.strftime('%H:%M'),
-            'date': timestamp.strftime('%a %d.%m.'),
+            'date': timestamp.strftime('%A, %d.%m.%Y'),
             'temperature': row[1],
             'humidity': row[2]
         }

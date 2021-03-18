@@ -3,52 +3,157 @@
 <head>
     <style>
         body {
-            width:50%;
+            width: 80%;
             margin-left:auto;
             margin-right:auto;
-            margin-top: 5%;
+            margin-top: 1%;
         }
 
         table {
-            font-family: arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             border-collapse: collapse;
             width: 100%;
         }
 
-        td, th {
-            border: 1px solid black;
-            text-align: left;
+        table td, table th {
+            border: 1px solid #ddd;
             padding: 8px;
         }
 
-        tr:nth-child(even) {
-            background-color: #dddddd;
+        table tr:nth-child(even){background-color: #f2f2f2;}
+
+        table tr:hover {background-color: #ddd;}
+
+        table th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+        /* Style the buttons that are used to open the tab content */
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+        }
+
+        /* Change background color of buttons on hover */
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        /* Create an active/current tablink class */
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        /* Style the tab content */
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+            overflow:auto;
+            height: calc(100vh - 10vh);
+            height: -webkit-calc(100vh - 10vh);
+            height: -moz-calc(100vh - 10vh);
         }
     </style>
     <title>Room-Temp</title>
-    <meta http-equiv="refresh" content="60" >
+    <meta http-equiv="refresh" content="180">
 </head>
 <body>
-{% for room in rooms %}
 
-<h2>{{ room }}</h2>
-<table>
-    <tr>
-        <th>Temperature</th>
-        <th>Humidity</th>
-        <th>Date</th>
-        <th>Time</th>
-    </tr>
-    {% for data in rooms[room] %}
-    <tr>
-        <td>{{ data['temperature'] }}°C</td>
-        <td>{{ data['humidity'] }}%</td>
-        <td>{{ data['date'] }}</td>
-        <td>{{ data['time'] }}</td>
-    </tr>
+<!-- Nav tabs -->
+<div class="tab">
+    {% for room in rooms %}
+    <button class="tablinks" onclick="openTab(this, '{{ room }}')" id="button_{{ room }}">{{ room }}</button>
     {% endfor %}
-</table>
-<br><br>
+</div>
+
+<!-- Tab panes -->
+{% for room in rooms %}
+<div id="{{ room }}" class="tabcontent">
+    <table>
+        <tr>
+            <th style="width:15%">Temperature</th>
+            <th style="width:15%">Humidity</th>
+            <th>Date</th>
+            <th>Time</th>
+        </tr>
+        {% for data in rooms[room] %}
+        <tr>
+            <td>{{ data['temperature'] }}°C</td>
+            <td>{{ data['humidity'] }}%</td>
+            <td>{{ data['date'] }}</td>
+            <td>{{ data['time'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
 {% endfor %}
+
+
 </body>
 </html>
+
+<script>
+    document.getElementById(getCookie("activeTab")).click();
+
+    function openTab(button, roomName) {
+        // Declare all variables
+        let i, tabcontent, tablinks;
+
+        // Get all elements with class="tabcontent" and hide them
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+
+        // Get all elements with class="tablinks" and remove the class "active"
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+
+        // Show the current tab, and add an "active" class to the button that opened the tab
+        document.getElementById(roomName).style.display = "block";
+        button.classList.add("active");
+
+        // Set cookie for active tab
+        setCookie("activeTab", "button_" + roomName, 30);
+    }
+
+    function setCookie(name,value,days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Strict";
+    }
+
+    function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for(let i=0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0)===' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+</script>
