@@ -48,9 +48,9 @@ def home():
 @app.route('/api/v1/rooms', methods=['GET'])
 def get_all():
     if request.json and 'limit' in request.json:
-        limit = request.json.get('limit', 12)
+        limit = request.json.get('limit', 24)
     else:
-        limit = 12
+        limit = 24
     rooms = db.get_rooms(limit)
     return jsonify(rooms)
 

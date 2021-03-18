@@ -25,5 +25,5 @@ while True:
     else:
         logging.error("This did not work, will try again...")
         sleep = 5
-    time.sleep(sleep * 15)
+    time.sleep(sleep * 10)
     sleep = 60
