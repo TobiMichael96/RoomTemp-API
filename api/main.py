@@ -2,10 +2,11 @@ import os
 import db
 import logging
 import flask
-from flask import make_response, jsonify, request
+import requests
+from flask import make_response, jsonify, request, render_template
 from flask_httpauth import HTTPBasicAuth
 
-app = flask.Flask(__name__)
+app = flask.Flask(__name__, template_folder='template')
 auth = HTTPBasicAuth()
 
 user = os.getenv("API_USERNAME")
@@ -45,7 +46,14 @@ def home():
     return "<h1>API</h1><p>This site is an API for room temperatures.</p>"
 
 
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
+    rooms = db.get_rooms(24)
+    return render_template('index.html', rooms=rooms)
+
+
 @app.route('/api/v1/rooms', methods=['GET'])
+@auth.login_required
 def get_all():
     if request.json and 'limit' in request.json:
         limit = request.json.get('limit', 24)
@@ -56,6 +64,7 @@ def get_all():
 
 
 @app.route('/api/v1/room/<string:name>', methods=['GET'])
+@auth.login_required
 def get_room(name):
     if request.json and 'limit' in request.json:
         limit = request.json.get('limit', 48)
