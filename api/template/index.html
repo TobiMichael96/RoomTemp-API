@@ -1,35 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <style>
         body {
             width: 80%;
-            margin-left:auto;
-            margin-right:auto;
+            margin-left: auto;
+            margin-right: auto;
             margin-top: 1%;
-        }
-
-        table {
-            font-family: Arial, Helvetica, sans-serif;
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        table td, table th {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-
-        table tr:nth-child(even){background-color: #f2f2f2;}
-
-        table tr:hover {background-color: #ddd;}
-
-        table th {
-            padding-top: 12px;
-            padding-bottom: 12px;
-            text-align: left;
-            background-color: #4CAF50;
-            color: white;
         }
 
         .tab {
@@ -62,13 +40,24 @@
         /* Style the tab content */
         .tabcontent {
             display: none;
-            padding: 6px 12px;
-            border: 1px solid #ccc;
-            border-top: none;
-            overflow:auto;
+            padding-top: 6px;
+            padding-right: 1px;
+            overflow-y: scroll;
             height: calc(100vh - 10vh);
             height: -webkit-calc(100vh - 10vh);
             height: -moz-calc(100vh - 10vh);
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
         }
     </style>
     <title>Room-Temp</title>
@@ -76,84 +65,127 @@
 </head>
 <body>
 
-<!-- Nav tabs -->
-<div class="tab">
-    {% for room in rooms %}
-    <button class="tablinks" onclick="openTab(this, '{{ room }}')" id="button_{{ room }}">{{ room }}</button>
-    {% endfor %}
-</div>
-
-<!-- Tab panes -->
-{% for room in rooms %}
-<div id="{{ room }}" class="tabcontent">
-    <table>
-        <tr>
-            <th style="width:15%">Temperature</th>
-            <th style="width:15%">Humidity</th>
-            <th>Date</th>
-            <th>Time</th>
-        </tr>
-        {% for data in rooms[room] %}
-        <tr>
-            <td>{{ data['temperature'] }}°C</td>
-            <td>{{ data['humidity'] }}%</td>
-            <td>{{ data['date'] }}</td>
-            <td>{{ data['time'] }}</td>
-        </tr>
+<div class="row">
+    <div class="col-sm-9">
+        <!-- Tab panes -->
+        {% for room in rooms %}
+        <div id="content_{{ room }}" class="table-responsive tabcontent">
+            <table class="table table-bordered">
+                <tr>
+                    <th style="width:20%">Temperature</th>
+                    <th style="width:20%">Humidity</th>
+                    <th>Date</th>
+                    <th style="width:20%">Time</th>
+                </tr>
+                {% for data in rooms[room] %}
+                <tr>
+                    <td>{{ data['temperature'] }}°C</td>
+                    <td>{{ data['humidity'] }}%</td>
+                    <td>{{ data['date'] }}</td>
+                    <td>{{ data['time'] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
         {% endfor %}
-    </table>
-</div>
-{% endfor %}
+    </div>
 
+    <div class="col-sm-3">
+        <!-- Nav tabs -->
+        <div class="btn-group">
+            {% for room in rooms %}
+            <button class="btn btn-primary" onclick="openTab(this, '{{ room }}')" id="button_{{ room }}">{{ room }}</button>
+            {% endfor %}
+        </div>
+        <br>
+        <br>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="inputGroup-sizing-default">Limit</span>
+            <input type="number" class="form-control" aria-label="Sizing example input"
+                   aria-describedby="inputGroup-sizing-default" id="limit_input" value="{{ limit }}"/>
+            <button class="btn btn-secondary" onclick="setLimit()">Set</button>
+            <button class="btn btn-warning" onclick="setLimit(24)">Reset</button>
+        </div>
+    </div>
+
+</div>
 
 </body>
 </html>
 
 <script>
+    // Set active tab to the cookie value
     document.getElementById(getCookie("activeTab")).click();
+
+    // Reload the page with current limit
+    limit = getCookie("limit")
+    if (limit !== null && limit !== document.getElementById("limit_input").value) {
+        document.location.search = "limit=" + limit;
+    }
 
     function openTab(button, roomName) {
         // Declare all variables
-        let i, tabcontent, tablinks;
+        let i, all_elements;
 
-        // Get all elements with class="tabcontent" and hide them
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
+        // Get all elements
+        all_elements = document.querySelectorAll("*");
+        console.log(all_elements);
+        for (i = 0; i < all_elements.length; i++) {
+            if ((all_elements[i].id).includes("content_")) {
+                all_elements[i].style.display = "none";
+            }
         }
 
         // Get all elements with class="tablinks" and remove the class "active"
-        tablinks = document.getElementsByClassName("tablinks");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        all_elements = document.querySelectorAll("*");
+        for (i = 0; i < all_elements.length; i++) {
+            if ((all_elements[i].id).includes("button_")) {
+                all_elements[i].className = all_elements[i].className.replace(" active", "");
+            }
         }
 
         // Show the current tab, and add an "active" class to the button that opened the tab
-        document.getElementById(roomName).style.display = "block";
+        document.getElementById("content_" + roomName).style.display = "block";
         button.classList.add("active");
 
         // Set cookie for active tab
         setCookie("activeTab", "button_" + roomName, 30);
     }
 
-    function setCookie(name,value,days) {
+    function setCookie(name, value, days) {
         let expires = "";
         if (days) {
             const date = new Date();
-            date.setTime(date.getTime() + (days*24*60*60*1000));
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
             expires = "; expires=" + date.toUTCString();
         }
-        document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Strict";
+        document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
     }
 
     function getCookie(name) {
         const nameEQ = name + "=";
         const ca = document.cookie.split(';');
-        for(let i=0; i < ca.length; i++) {
+        for (let i = 0; i < ca.length; i++) {
             let c = ca[i];
-            while (c.charAt(0)===' ') c = c.substring(1,c.length);
-            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
         }
         return null;
+    }
+
+    function setLimit(limit) {
+        if (limit === undefined) {
+            limit = document.getElementById("limit_input").value;
+        }
+        let reg = new RegExp('^\\d+$');
+        if (!reg.test(limit)) {
+            limit = 24;
+        }
+
+        // Set cookie for active tab
+        setCookie("limit", limit, 30);
+
+        // Reload the page with current limit
+        document.location.search = "limit=" + limit;
     }
 </script>

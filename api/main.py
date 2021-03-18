@@ -48,8 +48,11 @@ def home():
 
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
-    rooms = db.get_rooms(24)
-    return render_template('index.html', rooms=rooms)
+    limit = request.args.get('limit', default=24, type=int)
+    #rooms = db.get_rooms(limit)
+    rooms = requests.get("https://roomtemp.tmem.de/api/v1/rooms", auth=("admin", "mPV4UfqiyFaMpFPmqiSdgVURxm5ZTtdX"))
+    rooms = rooms.json()
+    return render_template('index.html', rooms=rooms, limit=limit)
 
 
 @app.route('/api/v1/rooms', methods=['GET'])
