@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+    <!-- ChartJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
     <style>
         body {
@@ -57,7 +60,19 @@
 <div class="row">
     <div class="col-lg-9">
         <!-- Nav tabs -->
-        <div class="btn-group">
+        <div class="input-group">
+            <div class="dropdown" style="padding-right: 1%">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    Rooms
+                </button>
+                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton1">
+                    {% for room in rooms %}
+                    <li><a onclick="openRoom(this, '{{ room }}')" id="room_btn_{{ room }}" class="dropdown-item">{{ room
+                        }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
             <div class="btn-group">
                 <button class="btn btn-primary active" onclick="openTab(this, 'chart_')" id="tab_btn_chart">Dashboard
                 </button>
@@ -70,6 +85,7 @@
         <canvas id="chart_{{ room }}" class="tabcontent"></canvas>
 
         <div id="table_{{ room }}" class="table-responsive tabcontent">
+            <p style="text-align: center; font-weight: bold">Room: {{ room }}</p>
             <table class="table table-bordered">
                 <tr>
                     <th style="width:20%">Temperature</th>
@@ -91,18 +107,6 @@
     </div>
 
     <div class="col-lg-3">
-        <!-- Nav tabs -->
-        <div class="input-group">
-            <span class="input-group-text span-fixed">Room</span>
-            <div class="btn-group">
-                {% for room in rooms %}
-                <button class="btn btn-primary" onclick="openRoom(this, '{{ room }}')" id="room_btn_{{ room }}">{{ room
-                    }}
-                </button>
-                {% endfor %}
-            </div>
-        </div>
-        <br><br>
         <div class="input-group">
             <span class="input-group-text span-fixed">Auto Refresh</span>
             <div class="btn-group">
@@ -114,7 +118,7 @@
                 </button>
             </div>
         </div>
-        <br><br>
+        <br>
         <div class="input-group">
             <span class="input-group-text" id="inputGroup-sizing-default">Limit</span>
             <input type="number" class="form-control" id="limit_input" value="{{ limit }}"/>
@@ -170,12 +174,12 @@
                         datasets: [{
                             data: temps,
                             label: "Temperature",
-                            borderColor: "#3e95cd",
+                            borderColor: "#f30052",
                             fill: false
                         }, {
                             data: humis,
                             label: "Humidity",
-                            borderColor: "#be2359",
+                            borderColor: "#3e95cd",
                             fill: false
                         }
 
@@ -189,6 +193,9 @@
                                     suggestedMax: 100
                                 }
                             }]
+                        }, title: {
+                            display: true,
+                            text: "Room: " + room
                         }
                     }
                 });
