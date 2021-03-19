@@ -1,40 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
     <style>
         body {
-            width: 80%;
+            width: 95%;
             margin-left: auto;
             margin-right: auto;
             margin-top: 1%;
         }
 
-        .tab {
-            overflow: hidden;
-            border: 1px solid #ccc;
-            background-color: #f1f1f1;
+        .form-control {
+            max-width: 59px;
         }
 
-        /* Style the buttons that are used to open the tab content */
-        .tab button {
-            background-color: inherit;
-            float: left;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            padding: 14px 16px;
-            transition: 0.3s;
+        .btn-group button {
+            min-width: 80px;
         }
 
-        /* Change background color of buttons on hover */
-        .tab button:hover {
-            background-color: #ddd;
+        .span-fixed {
+            min-width: 120px;
         }
 
-        /* Create an active/current tablink class */
-        .tab button.active {
-            background-color: #ccc;
+        .col-lg-3 {
+            padding-top: 5vh;
         }
 
         /* Style the tab content */
@@ -42,10 +33,9 @@
             display: none;
             padding-top: 6px;
             padding-right: 1px;
-            overflow-y: scroll;
-            height: calc(100vh - 10vh);
-            height: -webkit-calc(100vh - 10vh);
-            height: -moz-calc(100vh - 10vh);
+            height: calc(100vh - 30vh);
+            height: -webkit-calc(100vh - 30vh);
+            height: -moz-calc(100vh - 30vh);
         }
 
         /* Chrome, Safari, Edge, Opera */
@@ -61,15 +51,25 @@
         }
     </style>
     <title>Room-Temp</title>
-    <meta http-equiv="refresh" content="180">
 </head>
 <body>
 
 <div class="row">
-    <div class="col-sm-9">
+    <div class="col-lg-9">
+        <!-- Nav tabs -->
+        <div class="btn-group">
+            <div class="btn-group">
+                <button class="btn btn-primary active" onclick="openTab(this, 'chart_')" id="tab_btn_chart">Dashboard
+                </button>
+                <button class="btn btn-primary" onclick="openTab(this, 'table_')" id="tab_btn_table">Table</button>
+            </div>
+        </div>
+
         <!-- Tab panes -->
         {% for room in rooms %}
-        <div id="content_{{ room }}" class="table-responsive tabcontent">
+        <canvas id="chart_{{ room }}" class="tabcontent"></canvas>
+
+        <div id="table_{{ room }}" class="table-responsive tabcontent">
             <table class="table table-bordered">
                 <tr>
                     <th style="width:20%">Temperature</th>
@@ -77,7 +77,7 @@
                     <th>Date</th>
                     <th style="width:20%">Time</th>
                 </tr>
-                {% for data in rooms[room] %}
+                {% for data in rooms[room]|reverse %}
                 <tr>
                     <td>{{ data['temperature'] }}°C</td>
                     <td>{{ data['humidity'] }}%</td>
@@ -90,21 +90,38 @@
         {% endfor %}
     </div>
 
-    <div class="col-sm-3">
+    <div class="col-lg-3">
         <!-- Nav tabs -->
-        <div class="btn-group">
-            {% for room in rooms %}
-            <button class="btn btn-primary" onclick="openTab(this, '{{ room }}')" id="button_{{ room }}">{{ room }}</button>
-            {% endfor %}
+        <div class="input-group">
+            <span class="input-group-text span-fixed">Room</span>
+            <div class="btn-group">
+                {% for room in rooms %}
+                <button class="btn btn-primary" onclick="openRoom(this, '{{ room }}')" id="room_btn_{{ room }}">{{ room
+                    }}
+                </button>
+                {% endfor %}
+            </div>
         </div>
-        <br>
-        <br>
-        <div class="input-group mb-3">
+        <br><br>
+        <div class="input-group">
+            <span class="input-group-text span-fixed">Auto Refresh</span>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" id="auto_refresh_enabled"
+                        onclick="toggleAutoRefresh('true')">Enable
+                </button>
+                <button type="button" class="btn btn-primary" id="auto_refresh_disabled"
+                        onclick="toggleAutoRefresh('false')">Disable
+                </button>
+            </div>
+        </div>
+        <br><br>
+        <div class="input-group">
             <span class="input-group-text" id="inputGroup-sizing-default">Limit</span>
-            <input type="number" class="form-control" aria-label="Sizing example input"
-                   aria-describedby="inputGroup-sizing-default" id="limit_input" value="{{ limit }}"/>
-            <button class="btn btn-secondary" onclick="setLimit()">Set</button>
-            <button class="btn btn-warning" onclick="setLimit(24)">Reset</button>
+            <input type="number" class="form-control" id="limit_input" value="{{ limit }}"/>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="setLimit()">Set</button>
+                <button class="btn btn-warning" onclick="setLimit(24)">Reset</button>
+            </div>
         </div>
     </div>
 
@@ -115,41 +132,120 @@
 
 <script>
     // Set active tab to the cookie value
-    document.getElementById(getCookie("activeTab")).click();
+    document.getElementById("room_btn_" + getCookie("activeRoom")).click();
 
     // Reload the page with current limit
-    limit = getCookie("limit")
+    limit = getCookie("limit");
     if (limit !== null && limit !== document.getElementById("limit_input").value) {
         document.location.search = "limit=" + limit;
     }
 
-    function openTab(button, roomName) {
+    let refreshInterval;
+    autorefresh = getCookie("autoRefresh");
+    if (autorefresh == null) {
+        autorefresh = "true";
+        setCookie("autoRefresh", "true", 30);
+    }
+    toggleAutoRefresh(autorefresh);
+
+    const rooms = {{ rooms | tojson }};
+    // Get all elements
+    all_elements = document.querySelectorAll("*");
+    for (let room in rooms) {
+        let temps = []
+        let humis = []
+        let dates = []
+        for (let j = 0; j < rooms[room].length; j++) {
+            temps.push(rooms[room][j]['temperature']);
+            humis.push(rooms[room][j]['humidity']);
+            let date_time = rooms[room][j]['date'].split(",")[0] + " - " + rooms[room][j]['time'];
+            dates.push(date_time);
+        }
+        for (let j = 0; j < all_elements.length; j++) {
+            if ((all_elements[j].id).includes("chart_" + room)) {
+                new Chart(all_elements[j], {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            data: temps,
+                            label: "Temperature",
+                            borderColor: "#3e95cd",
+                            fill: false
+                        }, {
+                            data: humis,
+                            label: "Humidity",
+                            borderColor: "#be2359",
+                            fill: false
+                        }
+
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    suggestedMax: 100
+                                }
+                            }]
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    function openRoom(button, roomName) {
         // Declare all variables
         let i, all_elements;
 
         // Get all elements
         all_elements = document.querySelectorAll("*");
-        console.log(all_elements);
+        // Get all content and hide them
         for (i = 0; i < all_elements.length; i++) {
-            if ((all_elements[i].id).includes("content_")) {
+            if (all_elements[i].id.includes("chart_") || all_elements[i].id.includes("table_")) {
                 all_elements[i].style.display = "none";
             }
         }
 
-        // Get all elements with class="tablinks" and remove the class "active"
-        all_elements = document.querySelectorAll("*");
+        // Get all buttons and remove the class "active"
         for (i = 0; i < all_elements.length; i++) {
-            if ((all_elements[i].id).includes("button_")) {
-                all_elements[i].className = all_elements[i].className.replace(" active", "");
+            if ((all_elements[i].id).includes("room_btn")) {
+                all_elements[i].classList.remove("active");
             }
         }
 
+        let to_be_deactivate_btn = document.getElementById("tab_btn_table");
+        to_be_deactivate_btn.classList.remove("active");
+        let to_be_active = document.getElementById("tab_btn_chart");
+        to_be_active.classList.add("active");
+
         // Show the current tab, and add an "active" class to the button that opened the tab
-        document.getElementById("content_" + roomName).style.display = "block";
+        document.getElementById("chart_" + roomName).style.display = "block";
         button.classList.add("active");
 
         // Set cookie for active tab
-        setCookie("activeTab", "button_" + roomName, 30);
+        setCookie("activeRoom", roomName, 30);
+    }
+
+    function openTab(button, tab) {
+        let roomName = getCookie("activeRoom");
+        let to_be_deactivate, to_be_deactivate_btn;
+        if (tab === "chart_") {
+            to_be_deactivate = document.getElementById("table_" + roomName);
+            to_be_deactivate_btn = document.getElementById("tab_btn_table");
+        } else if (tab === "table_") {
+            to_be_deactivate = document.getElementById("chart_" + roomName);
+            to_be_deactivate_btn = document.getElementById("tab_btn_chart");
+        }
+        to_be_deactivate.style.display = "none";
+        to_be_deactivate_btn.classList.remove("active");
+
+        let activeTab = tab + roomName;
+        let to_be_active = document.getElementById(activeTab);
+        to_be_active.style.display = "block";
+        button.classList.add("active");
     }
 
     function setCookie(name, value, days) {
@@ -187,5 +283,25 @@
 
         // Reload the page with current limit
         document.location.search = "limit=" + limit;
+    }
+
+    function toggleAutoRefresh(refresh) {
+        setCookie('autoRefresh', refresh, 30);
+        let button_enable = document.getElementById("auto_refresh_enabled");
+        let button_disable = document.getElementById("auto_refresh_disabled");
+
+        if (refresh === "true") {
+            button_enable.classList.add("active");
+            button_disable.classList.remove("active");
+            refreshInterval = setInterval(function () {
+                window.location.reload();
+            }, 180000);
+        } else if (refresh === "false") {
+            if (refreshInterval !== null) {
+                clearInterval(refreshInterval);
+            }
+            button_enable.classList.remove("active");
+            button_disable.classList.add("active");
+        }
     }
 </script>

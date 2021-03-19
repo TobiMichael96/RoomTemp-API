@@ -7,7 +7,7 @@ services:
     environment:
       - API_PASSWORD=admin
       - API_USERNAME=admin
-      - FAV_ICO=
+      - FAV_ICO=favicon
     ports:
       - 5000:5000
     volumes:

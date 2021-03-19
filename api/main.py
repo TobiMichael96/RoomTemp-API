@@ -2,7 +2,7 @@ import os
 import db
 import logging
 import flask
-from flask import make_response, jsonify, request, render_template, redirect
+from flask import make_response, jsonify, request, render_template, redirect, abort
 from flask_httpauth import HTTPBasicAuth
 
 app = flask.Flask(__name__, template_folder='template')
@@ -49,7 +49,7 @@ def home():
 @app.route('/favicon.ico')
 def favicon():
     if fav_ico is None or "http" not in fav_ico:
-        return make_response(404)
+        return abort(404)
     return redirect(fav_ico)
 
 
