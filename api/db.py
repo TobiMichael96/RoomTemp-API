@@ -56,7 +56,7 @@ def get_rooms(limit):
     result = {}
     for room in rooms:
         statement = "SELECT timestamp, temperature, humidity FROM " + room + \
-                    " ORDER BY timestamp LIMIT ?"
+                    " ORDER BY timestamp DESC LIMIT ?"
         cursor.execute(statement, [limit * 2])
         result[room] = build_json(cursor, limit)
     return result
@@ -66,7 +66,7 @@ def get_by_name(name, limit):
     db = get_db()
     cursor = db.cursor()
     statement = "SELECT timestamp, temperature, humidity FROM " + name + \
-                " ORDER BY timestamp LIMIT ?"
+                " ORDER BY timestamp DESC LIMIT ?"
     try:
         cursor.execute(statement, [limit * 2])
     except sqlite3.DatabaseError:
