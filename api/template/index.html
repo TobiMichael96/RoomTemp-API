@@ -138,9 +138,6 @@
 </html>
 
 <script>
-    // Set active tab to the cookie value
-    document.getElementById("room_btn_" + getCookie("activeRoom")).click();
-
     // Reload the page with current limit
     limit = getCookie("limit");
     if (limit !== null && limit !== document.getElementById("limit_input").value) {
@@ -155,7 +152,15 @@
     }
     toggleAutoRefresh(autorefresh);
 
+    // Get rooms json objects from flask
     const rooms = {{ rooms | tojson }};
+
+    // Set active tab to the cookie value
+    if (getCookie("activeRoom") !== null) {
+        document.getElementById("room_btn_" + getCookie("activeRoom")).click();
+    } else {
+        document.getElementById("room_btn_" + Object.keys(rooms)[0]).click();
+    }
     // Get all elements
     all_elements = document.querySelectorAll("*");
     for (let room in rooms) {
@@ -232,8 +237,18 @@
         document.getElementById("chart_" + roomName).style.display = "block";
         button.classList.add("active");
 
+        // Check if it's the first run
+        let first_run = true;
+        if (getCookie("activeRoom") !== null) {
+            first_run = false;
+        }
         // Set cookie for active tab
         setCookie("activeRoom", roomName, 30);
+
+        // Show chart when it's the first run
+        if (first_run) {
+            document.getElementById("tab_btn_chart").click();
+        }
     }
 
     function openTab(button, tab) {
