@@ -82,7 +82,10 @@
 
         <!-- Tab panes -->
         {% for room in rooms %}
-        <canvas id="chart_{{ room }}" class="tabcontent"></canvas>
+        <div id="chart_{{ room }}" class="tabcontent">
+            <p style="text-align: center; font-weight: bold">Room: {{ room }}</p>
+            <canvas id="dash_{{ room }}"></canvas>
+        </div>
 
         <div id="table_{{ room }}" class="table-responsive tabcontent">
             <p style="text-align: center; font-weight: bold">Room: {{ room }}</p>
@@ -166,7 +169,7 @@
             dates.push(date_time);
         }
         for (let j = 0; j < all_elements.length; j++) {
-            if ((all_elements[j].id).includes("chart_" + room)) {
+            if ((all_elements[j].id).includes("dash_" + room)) {
                 new Chart(all_elements[j], {
                     type: 'line',
                     data: {
@@ -193,9 +196,6 @@
                                     suggestedMax: 100
                                 }
                             }]
-                        }, title: {
-                            display: true,
-                            text: "Room: " + room
                         }
                     }
                 });
