@@ -13,22 +13,15 @@
             margin-left: auto;
             margin-right: auto;
             margin-top: 4%;
+            background: #404040;
         }
 
         .form-control {
             max-width: 59px;
         }
 
-        .btn-group button {
-            min-width: 80px;
-        }
-
-        .span-fixed {
-            min-width: 120px;
-        }
-
-        .col-lg-3 {
-            padding-top: 5vh;
+        .tablewrapper {
+            overflow-y: auto;
         }
 
         /* Style the tab content */
@@ -39,6 +32,11 @@
             height: calc(100vh - 30vh);
             height: -webkit-calc(100vh - 30vh);
             height: -moz-calc(100vh - 30vh);
+        }
+
+        table thead tr th {
+            position: sticky;
+            top: -1.5%;
         }
 
         /* Chrome, Safari, Edge, Opera */
@@ -57,82 +55,69 @@
 </head>
 <body>
 
-<div class="row">
-    <div class="col-lg-9">
-        <!-- Nav tabs -->
-        <div class="input-group">
-            <div class="dropdown" style="padding-right: 1%">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                    Rooms
-                </button>
-                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton1">
-                    {% for room in rooms %}
-                    <li><a onclick="openRoom(this, '{{ room }}')" id="room_btn_{{ room }}" class="dropdown-item">{{ room
-                        }}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-primary active" onclick="openTab(this, 'chart_')" id="tab_btn_chart">Dashboard
-                </button>
-                <button class="btn btn-primary" onclick="openTab(this, 'table_')" id="tab_btn_table">Table</button>
-            </div>
-        </div>
-        <br>
-        <!-- Tab panes -->
-        {% for room in rooms %}
-        <div id="chart_{{ room }}" class="tabcontent">
-            <p style="text-align: center; font-weight: bold">Room: {{ room }}</p>
-            <canvas id="dash_{{ room }}"></canvas>
-        </div>
+<!-- Nav tabs -->
+<div class="shadow-lg p-3 mb-3 bg-dark rounded input-group">
+    <div class="btn-group">
+    </div>
+    <div class="btn-group ps-2" role="group" aria-label="Tab radio toggle button group">
+        <input type="radio" class="btn-check" name="tab_btn_radio" id="btn_radio_chart" onclick="openTab()" autocomplete="off" checked>
+        <label class="btn btn-outline-primary" for="btn_radio_chart">Dashboard</label>
 
-        <div id="table_{{ room }}" class="table-responsive tabcontent">
-            <p style="text-align: center; font-weight: bold">Room: {{ room }}</p>
-            <table class="table table-bordered">
-                <tr>
-                    <th style="width:20%">Temperature</th>
-                    <th style="width:20%">Humidity</th>
-                    <th>Date</th>
-                    <th style="width:20%">Time</th>
-                </tr>
-                {% for data in rooms[room] %}
-                <tr>
-                    <td>{{ data['temperature'] }}°C</td>
-                    <td>{{ data['humidity'] }}%</td>
-                    <td>{{ data['date'] }}</td>
-                    <td>{{ data['time'] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-        {% endfor %}
+        <input type="radio" class="btn-check" name="tab_btn_radio" id="btn_radio_table" onclick="openTab()" autocomplete="off">
+        <label class="btn btn-outline-primary" for="btn_radio_table">Table</label>
     </div>
 
-    <div class="col-lg-3">
-        <div class="input-group">
-            <span class="input-group-text span-fixed">Auto Refresh</span>
-            <div class="btn-group">
-                <button type="button" class="btn btn-primary" id="auto_refresh_enabled"
-                        onclick="toggleAutoRefresh('true')">Enable
-                </button>
-                <button type="button" class="btn btn-primary" id="auto_refresh_disabled"
-                        onclick="toggleAutoRefresh('false')">Disable
-                </button>
-            </div>
-        </div>
-        <br>
-        <div class="input-group">
-            <span class="input-group-text" id="inputGroup-sizing-default">Limit</span>
-            <input type="number" class="form-control" id="limit_input" value="{{ limit }}"/>
-            <div class="btn-group">
-                <button class="btn btn-secondary" onclick="setLimit()">Set</button>
-                <button class="btn btn-warning" onclick="setLimit(24)">Reset</button>
-            </div>
+    <div class="position-absolute top-50 start-50 translate-middle border border-primary rounded">
+        <div class="btn-group" role="group" aria-label="Room radio toggle button group">
+            {% for room in rooms %}
+            <input type="radio" class="btn-check" name="room_btn_radio" id="room_btn_{{ room }}" onclick="openRoom(this, '{{ room }}')" autocomplete="off">
+            <label class="btn btn-outline-primary" for="room_btn_{{ room }}">{{ room }}</label>
+            {% endfor %}
         </div>
     </div>
 
+    <div class="position-absolute top-50 end-0 translate-middle-y pe-2">
+        <div class="btn-group">
+            <div class="pe-2">
+                <input type="checkbox" onclick="toggleAutoRefresh(this)" class="btn-check" id="btn_check_refresh" checked autocomplete="off">
+                <label class="btn btn-outline-primary" for="btn_check_refresh">Auto&nbsp;Refresh</label><br>
+            </div>
+            <div class="input-group pe-2">
+                <span class="input-group-text">Limit</span>
+                <input type="number" class="form-control" id="limit_input" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Leave empty to reset." value="{{ limit }}" onkeypress="setLimit(this)"/>
+            </div>
+        </div>
+    </div>
 </div>
+<!-- Tab panes -->
+{% for room in rooms %}
+<div id="chart_{{ room }}" class="shadow-lg p-3 mb-3 bg-dark rounded tabcontent">
+    <canvas class="pt-4" height="100%" id="dash_{{ room }}"></canvas>
+</div>
+
+<div id="table_{{ room }}" class="shadow-lg p-2 mb-3 bg-dark rounded tabcontent tablewrapper">
+    <table class="table table-hover table-responsive">
+        <thead class="table-primary">
+            <tr>
+                <th style="width:20%">Temperature</th>
+                <th style="width:20%">Humidity</th>
+                <th>Date</th>
+                <th style="width:20%">Time</th>
+            </tr>
+        </thead>
+        <tbody class="table-dark">
+        {% for data in rooms[room] %}
+        <tr>
+            <td>{{ data['temperature'] }}°C</td>
+            <td>{{ data['humidity'] }}%</td>
+            <td>{{ data['date'] }}</td>
+            <td>{{ data['time'] }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
 
 </body>
 </html>
@@ -144,13 +129,19 @@
         document.location.search = "limit=" + limit;
     }
 
+    // Check if auto refresh is set
     let refreshInterval;
     autorefresh = getCookie("autoRefresh");
     if (autorefresh == null) {
         autorefresh = "true";
         setCookie("autoRefresh", "true", 30);
     }
-    toggleAutoRefresh(autorefresh);
+
+    // Set tooltips
+    let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
 
     // Get rooms json objects from flask
     const rooms = {{ rooms | tojson }};
@@ -161,8 +152,9 @@
     } else {
         document.getElementById("room_btn_" + Object.keys(rooms)[0]).click();
     }
-    // Get all elements
-    all_elements = document.querySelectorAll("*");
+
+    // Get all canvas elements
+    canvas_elements = document.querySelectorAll('canvas');
     for (let room in rooms) {
         let temps = []
         let humis = []
@@ -173,9 +165,9 @@
             let date_time = rooms[room][j]['date'].split(",")[0] + " - " + rooms[room][j]['time'];
             dates.push(date_time);
         }
-        for (let j = 0; j < all_elements.length; j++) {
-            if ((all_elements[j].id).includes("dash_" + room)) {
-                new Chart(all_elements[j], {
+        for (let j = 0; j < canvas_elements.length; j++) {
+            if ((canvas_elements[j].id).includes("dash_" + room)) {
+                new Chart(canvas_elements[j], {
                     type: 'line',
                     data: {
                         labels: dates,
@@ -183,11 +175,15 @@
                             data: temps,
                             label: "Temperature",
                             borderColor: "#f30052",
+                            pointBackgroundColor: "#fff",
+                            pointRadius: 5,
                             fill: false
                         }, {
                             data: humis,
                             label: "Humidity",
                             borderColor: "#3e95cd",
+                            pointBackgroundColor: "#fff",
+                            pointRadius: 5,
                             fill: false
                         }
 
@@ -198,9 +194,23 @@
                             yAxes: [{
                                 ticks: {
                                     beginAtZero: true,
-                                    suggestedMax: 100
+                                    suggestedMax: 100,
+                                    fontColor: 'white'
+                                }, gridLines: {
+                                    color: 'lightgray'
+                                }
+                            }], xAxes: [{
+                                ticks: {
+                                    fontColor: 'white'
+                                }, gridLines: {
+                                    color: 'lightgray'
                                 }
                             }]
+                        }, legend: {
+                            labels: {
+                                // This more specific font property overrides the global property
+                                fontColor: 'white'
+                            }
                         }
                     }
                 });
@@ -221,21 +231,9 @@
             }
         }
 
-        // Get all buttons and remove the class "active"
-        for (i = 0; i < all_elements.length; i++) {
-            if ((all_elements[i].id).includes("room_btn")) {
-                all_elements[i].classList.remove("active");
-            }
-        }
-
-        let to_be_deactivate_btn = document.getElementById("tab_btn_table");
-        to_be_deactivate_btn.classList.remove("active");
-        let to_be_active = document.getElementById("tab_btn_chart");
-        to_be_active.classList.add("active");
-
         // Show the current tab, and add an "active" class to the button that opened the tab
         document.getElementById("chart_" + roomName).style.display = "block";
-        button.classList.add("active");
+        //button.classList.add("active");
 
         // Check if it's the first run
         let first_run = true;
@@ -251,23 +249,18 @@
         }
     }
 
-    function openTab(button, tab) {
+    function openTab() {
         let roomName = getCookie("activeRoom");
-        let to_be_deactivate, to_be_deactivate_btn;
-        if (tab === "chart_") {
+        let to_be_active, to_be_deactivate;
+        if (document.getElementById("btn_radio_chart").checked) {
             to_be_deactivate = document.getElementById("table_" + roomName);
-            to_be_deactivate_btn = document.getElementById("tab_btn_table");
-        } else if (tab === "table_") {
+            to_be_active = document.getElementById("chart_" + roomName);
+        } else if (document.getElementById("btn_radio_table").checked) {
             to_be_deactivate = document.getElementById("chart_" + roomName);
-            to_be_deactivate_btn = document.getElementById("tab_btn_chart");
+            to_be_active = document.getElementById("table_" + roomName);
         }
         to_be_deactivate.style.display = "none";
-        to_be_deactivate_btn.classList.remove("active");
-
-        let activeTab = tab + roomName;
-        let to_be_active = document.getElementById(activeTab);
         to_be_active.style.display = "block";
-        button.classList.add("active");
     }
 
     function setCookie(name, value, days) {
@@ -291,10 +284,14 @@
         return null;
     }
 
-    function setLimit(limit) {
-        if (limit === undefined) {
-            limit = document.getElementById("limit_input").value;
+    function setLimit(input) {
+        let limit;
+        if (event.keyCode === 13) {
+            limit = input.value;
+        } else {
+            return;
         }
+
         let reg = new RegExp('^\\d+$');
         if (!reg.test(limit)) {
             limit = 24;
@@ -307,14 +304,16 @@
         document.location.search = "limit=" + limit;
     }
 
-    function toggleAutoRefresh(refresh) {
+    function toggleAutoRefresh(button) {
+        let refresh;
+        if (button.checked) {
+            refresh = "true";
+        } else {
+            refresh = "false";
+        }
         setCookie('autoRefresh', refresh, 30);
-        let button_enable = document.getElementById("auto_refresh_enabled");
-        let button_disable = document.getElementById("auto_refresh_disabled");
 
         if (refresh === "true") {
-            button_enable.classList.add("active");
-            button_disable.classList.remove("active");
             refreshInterval = setInterval(function () {
                 window.location.reload();
             }, 180000);
@@ -322,8 +321,6 @@
             if (refreshInterval !== null) {
                 clearInterval(refreshInterval);
             }
-            button_enable.classList.remove("active");
-            button_disable.classList.add("active");
         }
     }
 </script>
