@@ -135,6 +135,9 @@
     if (autorefresh == null) {
         autorefresh = "true";
         setCookie("autoRefresh", "true", 30);
+        refreshInterval = setInterval(function () {
+            window.location.reload();
+        }, 600000);
     }
 
     // Set tooltips
@@ -318,7 +321,7 @@
         if (refresh === "true") {
             refreshInterval = setInterval(function () {
                 window.location.reload();
-            }, 180000);
+            }, 600000);
         } else if (refresh === "false") {
             if (refreshInterval !== null) {
                 clearInterval(refreshInterval);
